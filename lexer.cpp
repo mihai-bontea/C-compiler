@@ -81,17 +81,7 @@ std::ostream& operator<<(std::ostream& os, const Token& token) {
 }
 
 int main(int argc, char **argv) {
-
-    // std::regex all_regex(R"(([a-zA-Z_]\w*\b)|
-    //                     (\b\d+(\.\d+)?\b)|
-    //                     ("(\\.|[^\\"])*")|
-    //                     ([\+\-\*/%=<>&\|!~^]+)|
-    //                     ([;,\(\)\{\}\[\]])|
-    //                     (//.*|/\*[\s\S]*?\*/))");
-    
     std::regex all_regex(R"(([a-zA-Z_]\w*\b)|(\b\d+(\.\d+)?\b)|("(\\.|[^\\"])*")|([\+\-\*/%=<>&\|!~^]+)|([;,\(\)\{\}\[\]])|(//.*|/\*[\s\S]*?\*/))");
-
-
 
     // Open the C source file
     std::ifstream file(argv[1]);
@@ -111,9 +101,7 @@ int main(int argc, char **argv) {
             
             if (std::regex_search(searchStart, line.cend(), match, all_regex))
             {
-                // std::cout << match.str() << " ";
                 tokens.push_back(Token(match.str()));
-
             }
             else
             {
