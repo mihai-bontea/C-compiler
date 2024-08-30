@@ -4,30 +4,94 @@
 #include <regex>
 #include <vector>
 
-struct Token {
-    std::string type;
-    std::string value;
+enum class TokenType {
+    Keyword,
+    Identifier,
+    Constant,
+    StringLiteral,
+    Operator,
+    Delimiter,
+    Comment
 };
 
+
+struct Token {
+private:
+    static std::regex keyword_;
+    static std::regex identifier_;
+    static std::regex constant_;
+    static std::regex string_literal_;
+    static std::regex operator_;
+    static std::regex delimiter_;
+    static std::regex comment_;
+
+    TokenType type_;
+    std::string value_;
+public:
+    explicit Token(const std::string &str): value_{str}
+    {
+        std::smatch match;
+        if (std::regex_search(str.cbegin(), str.cend(), match, keyword_))
+        {
+            type_ = TokenType::Keyword;
+        }
+        else if (std::regex_search(str.cbegin(), str.cend(), match, identifier_))
+        {
+            type_ = TokenType::Identifier;
+        }
+        else if (std::regex_search(str.cbegin(), str.cend(), match, constant_))
+        {
+            type_ = TokenType::Constant;
+        }
+        else if (std::regex_search(str.cbegin(), str.cend(), match, string_literal_))
+        {
+            type_ = TokenType::StringLiteral;
+        }
+        else if (std::regex_search(str.cbegin(), str.cend(), match, operator_))
+        {
+            type_ = TokenType::Operator;
+        }
+        else if (std::regex_search(str.cbegin(), str.cend(), match, delimiter_))
+        {
+            type_ = TokenType::Delimiter;
+        }
+        else if (std::regex_search(str.cbegin(), str.cend(), match, comment_))
+        {
+            type_ = TokenType::Comment;
+        }
+        else
+        {
+            std::cerr << "This shouldn't happen!\n";
+        }
+    }
+    friend std::ostream& operator<<(std::ostream& os, const Token& token);
+};
+
+std::regex Token::keyword_(R"(\b(auto|break|case|char|const|continue|default|do|double|else|enum|extern|float|for|goto|if|int|long|register|return|short|signed|sizeof|static|struct|switch|typedef|union|unsigned|void|volatile|while)\b)");
+std::regex Token::identifier_(R"([a-zA-Z_]\w*\b)");
+std::regex Token::constant_(R"(\b\d+(\.\d+)?\b)");
+std::regex Token::string_literal_(R"("(\\.|[^\\"])*")");
+std::regex Token::operator_(R"([\+\-\*/%=<>&\|!~^]+)");
+std::regex Token::delimiter_(R"([;,\(\)\{\}\[\]])");
+std::regex Token::comment_(R"(//.*|/\*[\s\S]*?\*/)");
+
 std::ostream& operator<<(std::ostream& os, const Token& token) {
-    os << "[" << token.type << "] " << token.value;
+    os << "[" << static_cast<int>(token.type_) << "] " << token.value_;
     return os;
 }
 
 int main(int argc, char **argv) {
 
+    // std::regex all_regex(R"(([a-zA-Z_]\w*\b)|
+    //                     (\b\d+(\.\d+)?\b)|
+    //                     ("(\\.|[^\\"])*")|
+    //                     ([\+\-\*/%=<>&\|!~^]+)|
+    //                     ([;,\(\)\{\}\[\]])|
+    //                     (//.*|/\*[\s\S]*?\*/))");
+    
+    std::regex all_regex(R"(([a-zA-Z_]\w*\b)|(\b\d+(\.\d+)?\b)|("(\\.|[^\\"])*")|([\+\-\*/%=<>&\|!~^]+)|([;,\(\)\{\}\[\]])|(//.*|/\*[\s\S]*?\*/))");
 
-    // Define the regular expressions for different token types
-    // std::regex keyword_regex(R"(\b(auto|break|case|char|const|continue|default|do|double|else|enum|extern|float|for|goto|if|int|long|register|return|short|signed|sizeof|static|struct|switch|typedef|union|unsigned|void|volatile|while)\b)");
-    // std::regex identifier_regex(R"(\b[a-zA-Z_][a-zA-Z0-9_]*\b)");
-	std::regex identifier_regex(R"([a-zA-Z_]\w*\b)");
-    std::regex constant_regex(R"(\b\d+(\.\d+)?\b)");
-    std::regex string_literal_regex(R"("(\\.|[^\\"])*")");
-    std::regex operator_regex(R"([\+\-\*/%=<>&\|!~^]+)");
-    std::regex delimiter_regex(R"([;,\(\)\{\}\[\]])");
-	// std::regex delimiter_regex(R"([;,(\)\{\}\[\]])");
-    std::regex comment_regex(R"(//.*|/\*[\s\S]*?\*/)");
-	std::regex paranteza(R"(\()");
+
 
     // Open the C source file
     std::ifstream file(argv[1]);
@@ -44,39 +108,29 @@ int main(int argc, char **argv) {
 
         while (searchStart != line.cend()) {
             std::smatch match;
+            
+            if (std::regex_search(searchStart, line.cend(), match, all_regex))
+            {
+                // std::cout << match.str() << " ";
+                tokens.push_back(Token(match.str()));
 
-            // if (std::regex_search(searchStart, line.cend(), match, keyword_regex)) {
-            //     tokens.push_back({"Keyword", match.str()});
-			if (std::regex_search(searchStart, line.cend(), match, paranteza)){
-				tokens.push_back({"Paranteza", match.str()});
-			
-            } else if (std::regex_search(searchStart, line.cend(), match, identifier_regex)) {
-                tokens.push_back({"Identifier", match.str()});
-            } else if (std::regex_search(searchStart, line.cend(), match, constant_regex)) {
-                tokens.push_back({"Constant", match.str()});
-            } else if (std::regex_search(searchStart, line.cend(), match, string_literal_regex)) {
-                tokens.push_back({"String Literal", match.str()});
-            } else if (std::regex_search(searchStart, line.cend(), match, operator_regex)) {
-                tokens.push_back({"Operator", match.str()});
-            } else if (std::regex_search(searchStart, line.cend(), match, delimiter_regex)) {
-                tokens.push_back({"Delimiter", match.str()});
-            } else if (std::regex_search(searchStart, line.cend(), match, comment_regex)) {
-                tokens.push_back({"Comment", match.str()});
-            } else {
-                // ++searchStart;
+            }
+            else
+            {
+                std::cout << "no match\n";
+                ++searchStart;
                 continue;
             }
-			// std::cout << match.str() << " ";
             searchStart = match.suffix().first;
         }
     }
 
     file.close();
 
-    // Print the tokens in order
     for (const auto& token : tokens) {
         std::cout << token << std::endl;
     }
+    std::cout << tokens.size() << std::endl;
 
     return 0;
 }
