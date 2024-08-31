@@ -34,7 +34,6 @@ std::string enum_to_str(TokenType type)
     }
 }
 
-
 struct Token {
 private:
     static std::regex keyword_;

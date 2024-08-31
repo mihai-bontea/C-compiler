@@ -9,7 +9,6 @@
 int main(int argc, char **argv) {
     std::regex all_regex(R"(([a-zA-Z_]\w*\b)|(\b\d+(\.\d+)?\b)|("(\\.|[^\\"])*")|([\+\-\*/%=<>&\|!~^]+)|([;,\(\)\{\}\[\]])|(//.*|/\*[\s\S]*?\*/))");
 
-    // Open the C source file
     std::ifstream file(argv[1]);
     if (!file.is_open()) {
         std::cerr << "Error opening file!" << std::endl;
