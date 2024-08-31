@@ -1,8 +1,5 @@
 #include <iostream>
-#include <fstream>
-#include <string>
 #include <regex>
-#include <vector>
 
 enum class TokenType {
     Keyword,
@@ -13,6 +10,29 @@ enum class TokenType {
     Delimiter,
     Comment
 };
+
+std::string enum_to_str(TokenType type)
+{
+    switch (type)
+    {
+    case TokenType::Keyword:
+        return "keyword";
+    case TokenType::Identifier:
+        return "identifier";
+    case TokenType::Constant:
+        return "constant";
+    case TokenType::StringLiteral:
+        return "string literal";
+    case TokenType::Operator:
+        return "operator";
+    case TokenType::Delimiter:
+        return "delimiter";
+    case TokenType::Comment:
+        return "comment";
+    default:
+        return "invalid token";
+    }
+}
 
 
 struct Token {
@@ -76,49 +96,6 @@ std::regex Token::delimiter_(R"([;,\(\)\{\}\[\]])");
 std::regex Token::comment_(R"(//.*|/\*[\s\S]*?\*/)");
 
 std::ostream& operator<<(std::ostream& os, const Token& token) {
-    os << "[" << static_cast<int>(token.type_) << "] " << token.value_;
+    os << "[" << enum_to_str(token.type_) << "] " << token.value_;
     return os;
-}
-
-int main(int argc, char **argv) {
-    std::regex all_regex(R"(([a-zA-Z_]\w*\b)|(\b\d+(\.\d+)?\b)|("(\\.|[^\\"])*")|([\+\-\*/%=<>&\|!~^]+)|([;,\(\)\{\}\[\]])|(//.*|/\*[\s\S]*?\*/))");
-
-    // Open the C source file
-    std::ifstream file(argv[1]);
-    if (!file.is_open()) {
-        std::cerr << "Error opening file!" << std::endl;
-        return 1;
-    }
-
-    std::string line;
-    std::vector<Token> tokens;
-
-    while (std::getline(file, line)) {
-        std::string::const_iterator searchStart(line.cbegin());
-
-        while (searchStart != line.cend()) {
-            std::smatch match;
-            
-            if (std::regex_search(searchStart, line.cend(), match, all_regex))
-            {
-                tokens.push_back(Token(match.str()));
-            }
-            else
-            {
-                std::cout << "no match\n";
-                ++searchStart;
-                continue;
-            }
-            searchStart = match.suffix().first;
-        }
-    }
-
-    file.close();
-
-    for (const auto& token : tokens) {
-        std::cout << token << std::endl;
-    }
-    std::cout << tokens.size() << std::endl;
-
-    return 0;
 }
