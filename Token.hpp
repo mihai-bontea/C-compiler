@@ -81,8 +81,14 @@ public:
         else
         {
             std::cerr << "This shouldn't happen!\n";
+            exit(1);
         }
     }
+    TokenType type() const
+    {
+        return type_;
+    }
+
     friend std::ostream& operator<<(std::ostream& os, const Token& token);
 };
 

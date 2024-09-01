@@ -50,6 +50,8 @@ PREPROCESSOR="gcc -E -P \"$FILE_PATH\" -o \"$OUTPUT_FILE\""
 eval $PREPROCESSOR
 
 # 2) Running the lexer, parser, and assembly generator (TODO)
+LEXER_AND_PARSER="./compiler \"$OUTPUT_FILE\""
+eval $LEXER_AND_PARSER
 
 # ...
 ASSEMBLY_PATH=""
@@ -57,6 +59,7 @@ FINAL_OUTPUT_PATH=""
 
 if [ "$LEX_FLAG" -eq 1 ]; then
 	echo "Run the lexer, but stop before parsing."
+	exit 0
 fi
 
 if [ "$PARSE_FLAG" -eq 1 ]; then

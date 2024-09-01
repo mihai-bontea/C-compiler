@@ -20,22 +20,27 @@ std::vector<Token> get_tokens_from_file(const char* filename)
 
     while (std::getline(file, line))
     {
-        std::string::const_iterator searchStart(line.cbegin());
+        std::string::const_iterator search_start(line.cbegin());
 
-        while (searchStart != line.cend()) {
+        while (search_start != line.cend()) {
             std::smatch match;
             
-            if (std::regex_search(searchStart, line.cend(), match, all_regex))
+            if (std::regex_search(search_start, line.cend(), match, all_regex))
             {
-                tokens.push_back(Token(match.str()));
+                auto token = Token(match.str());
+                tokens.push_back(token);
+
+                if (token.type() == TokenType::Constant)
+                {
+                    std::cout << "Constant! Prefix=" << match.prefix() << " " << "Sufix=" << match.suffix() << std::endl;
+                }
             }
             else
             {
-                std::cout << "no match\n";
-                ++searchStart;
-                continue;
+                std::cerr << "Invalid token\n";
+                exit(1);
             }
-            searchStart = match.suffix().first;
+            search_start = match.suffix().first;
         }
     }
     file.close();
