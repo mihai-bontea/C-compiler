@@ -1,5 +1,6 @@
 #include <iostream>
 #include <regex>
+#include <functional>
 
 enum class TokenType {
     Keyword,
@@ -46,43 +47,95 @@ private:
 
     TokenType type_;
     std::string value_;
+
+    void validate_context(const std::smatch &original_match)
+    {
+        // Get the matching string, and its suffix and prefix
+        const auto str = original_match.str();
+        auto suffix = original_match.suffix().str();
+        auto prefix = original_match.prefix().str();
+        // Ignore everything after space for suffix
+        suffix = suffix.substr(0, suffix.find(' '));
+        // Ignore everything before space for prefix
+        prefix = prefix.substr(prefix.find(' ') + 1);
+
+        auto is_str_empty_or_delimiter = [](const std::string &str){
+            if (str == "")
+                return true;
+            
+            auto is_char_delimiter = [](char c){
+                std::string delim = "([;,(){}[]]) ";
+                return delim.find(c) != std::string::npos;
+            };
+            return std::all_of(str.cbegin(), str.cend(), is_char_delimiter);
+        };
+
+        switch(type_)
+        {
+        case TokenType::Constant:
+            if (!is_str_empty_or_delimiter(suffix))
+            {
+                throw std::runtime_error("Expected delimiter after constant: " + str + suffix);
+            }
+            break;
+        case TokenType::Identifier:
+            if (!is_str_empty_or_delimiter(prefix))
+            {
+                throw std::runtime_error("Unexpected character before identifier: " + prefix + str);
+            }
+            break;
+        case TokenType::Keyword:
+            break;
+        case TokenType::StringLiteral:
+            break;
+        case TokenType::Operator:
+            break;
+        case TokenType::Delimiter:
+            break;
+        case TokenType::Comment:
+            break;
+        default:
+            break;
+        }
+    }
+
 public:
-    explicit Token(const std::string &str): value_{str}
+    explicit Token(const std::smatch &original_match): value_{original_match.str()}
     {
         std::smatch match;
-        if (std::regex_search(str.cbegin(), str.cend(), match, keyword_))
+        if (std::regex_search(value_.cbegin(), value_.cend(), match, keyword_))
         {
             type_ = TokenType::Keyword;
         }
-        else if (std::regex_search(str.cbegin(), str.cend(), match, identifier_))
+        else if (std::regex_search(value_.cbegin(), value_.cend(), match, identifier_))
         {
             type_ = TokenType::Identifier;
         }
-        else if (std::regex_search(str.cbegin(), str.cend(), match, constant_))
+        else if (std::regex_search(value_.cbegin(), value_.cend(), match, constant_))
         {
             type_ = TokenType::Constant;
         }
-        else if (std::regex_search(str.cbegin(), str.cend(), match, string_literal_))
+        else if (std::regex_search(value_.cbegin(), value_.cend(), match, string_literal_))
         {
             type_ = TokenType::StringLiteral;
         }
-        else if (std::regex_search(str.cbegin(), str.cend(), match, operator_))
+        else if (std::regex_search(value_.cbegin(), value_.cend(), match, operator_))
         {
             type_ = TokenType::Operator;
         }
-        else if (std::regex_search(str.cbegin(), str.cend(), match, delimiter_))
+        else if (std::regex_search(value_.cbegin(), value_.cend(), match, delimiter_))
         {
             type_ = TokenType::Delimiter;
         }
-        else if (std::regex_search(str.cbegin(), str.cend(), match, comment_))
+        else if (std::regex_search(value_.cbegin(), value_.cend(), match, comment_))
         {
             type_ = TokenType::Comment;
         }
         else
         {
-            std::cerr << "This shouldn't happen!\n";
-            exit(1);
+            throw std::runtime_error(value_ + " doesn't match any token type!");
         }
+        validate_context(original_match);
     }
     TokenType type() const
     {

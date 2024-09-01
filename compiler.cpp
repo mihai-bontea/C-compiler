@@ -18,6 +18,7 @@ std::vector<Token> get_tokens_from_file(const char* filename)
     std::string line;
     std::vector<Token> tokens;
 
+    size_t line_count = 0;
     while (std::getline(file, line))
     {
         std::string::const_iterator search_start(line.cbegin());
@@ -27,12 +28,14 @@ std::vector<Token> get_tokens_from_file(const char* filename)
             
             if (std::regex_search(search_start, line.cend(), match, all_regex))
             {
-                auto token = Token(match.str());
-                tokens.push_back(token);
-
-                if (token.type() == TokenType::Constant)
+                try
                 {
-                    std::cout << "Constant! Prefix=" << match.prefix() << " " << "Sufix=" << match.suffix() << std::endl;
+                    tokens.push_back(Token(match));
+                }
+                catch(const std::runtime_error& e)
+                {
+                    std::cerr << "Error at line " << line_count << ": " << e.what() << std::endl;
+                    exit(-1);
                 }
             }
             else
@@ -42,6 +45,7 @@ std::vector<Token> get_tokens_from_file(const char* filename)
             }
             search_start = match.suffix().first;
         }
+        ++line_count;
     }
     file.close();
     return tokens;
