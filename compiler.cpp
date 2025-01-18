@@ -4,6 +4,7 @@
 #include <vector>
 
 #include "Token.hpp"
+#include "SyntaxTree.hpp"
 
 std::vector<Token> get_tokens_from_file(const char* filename)
 {
@@ -60,5 +61,8 @@ int main(int argc, char **argv)
         std::cout << token << std::endl;
     }
     // Stage 2: building the AST
+    // Use the tokens to build the syntax tree
+    std::cout << "All good\n";
+    
     return 0;
 }

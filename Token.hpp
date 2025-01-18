@@ -1,8 +1,11 @@
+#pragma once
+
 #include <iostream>
 #include <regex>
 #include <functional>
 
-enum class TokenType {
+enum class TokenType
+{
     Keyword,
     Identifier,
     Constant,
@@ -35,7 +38,8 @@ std::string enum_to_str(TokenType type)
     }
 }
 
-struct Token {
+struct Token
+{
 private:
     static std::regex keyword_;
     static std::regex identifier_;
@@ -59,7 +63,8 @@ private:
         // Ignore everything before space for prefix
         prefix = prefix.substr(prefix.find(' ') + 1);
 
-        auto is_str_empty_or_delimiter = [](const std::string &str){
+        auto is_str_empty_or_delimiter = [](const std::string &str)
+        {
             if (str == "")
                 return true;
             
@@ -153,7 +158,8 @@ std::regex Token::operator_(R"([\+\-\*/%=<>&\|!~^]+)");
 std::regex Token::delimiter_(R"([;,\(\)\{\}\[\]])");
 std::regex Token::comment_(R"(//.*|/\*[\s\S]*?\*/)");
 
-std::ostream& operator<<(std::ostream& os, const Token& token) {
+std::ostream& operator<<(std::ostream& os, const Token& token)
+{
     os << "[" << enum_to_str(token.type_) << "] " << token.value_;
     return os;
 }
