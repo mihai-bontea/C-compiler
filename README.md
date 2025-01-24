@@ -2,6 +2,8 @@
 
 ## Possible AST structure:
 
+```python
+
 <program> ::= <function>
 <function> ::= "int" <identifier> "(" "void" ")" <block>
 <block> ::= "{" { <block-item> } "}"
